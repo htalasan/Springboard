@@ -7,6 +7,28 @@ import requests
 import spotipy
 import spotipy.util as util
 
+def get_playlist_list(token):
+    """Gets playlist id and names from current user"""
+    url = f"https://api.spotify.com/v1/me/playlists/"
+    headers = {'Authorization': f"Bearer {token}"}
+    r = requests.get(url, headers=headers)
+    parsed = json.loads(r.text)
+
+    return [(d['id'],d['name']) for d in parsed['items']]
+
+def get_playlist_info(playlist_id, token):
+    """Gets relevant playlist information"""
+    url = f"https://api.spotify.com/v1/playlists/{playlist_id}"
+    headers = {'Authorization': f"Bearer {token}"}
+    r = requests.get(url, headers=headers)
+    parsed = json.loads(r.text)
+
+    playlist_info = {'id':playlist_id,
+                    'name':parsed['name'],
+                    'description':parsed['description']}
+
+    return playlist_info
+
 def get_track_ids_from_playlist(playlist_id, token):
     '''Get the track ids from a playlist'''
 
@@ -43,7 +65,9 @@ def get_track_info(track_id, token):
     track_info = {'id': track_id,
                 'name': parsed['name'],
                 'artist': [d['name'] for d in parsed['artists']],
-                'album':parsed['album']['name']}
+                'album':parsed['album']['name'],
+                'explicit':parsed['explicit'],
+                'popularity':parsed['popularity']}
 
     return track_info
 
@@ -77,12 +101,16 @@ def get_playlist_tracks_info(playlist_id, token):
     return df
 
 def get_df_from_playlist(playlist_id, token):
-    """This returns a merged df with the track info and features of a playlist"""
+    """This returns a merged df with the track info and features of a playlist
+    and basic playlist information"""
 
+    playlist_info = get_playlist_info(playlist_id, token)
     df_info = get_playlist_tracks_info(playlist_id, token)
     df_features = get_playlist_tracks_features(playlist_id, token)
 
     merged = df_info.merge(df_features, on='id')
+    merged['playlist_name'] = playlist_info['name']
+    merged['playlist_desc'] = playlist_info['description']
 
     return merged
 
