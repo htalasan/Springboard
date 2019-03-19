@@ -81,7 +81,7 @@ def get_playlist_tracks_features(playlist_id, token):
         track_info = get_track_features(id, token)
         playlist_track_features.append(track_info)
 
-    df = pd.DataFrame.from_dict(playlist_track_features)
+    df = pd.DataFrame.from_dict(playlist_track_features).set_index('id')
 
     return df
 
@@ -96,7 +96,7 @@ def get_playlist_tracks_info(playlist_id, token):
         track_info = get_track_info(id, token)
         playlist_track_info.append(track_info)
 
-    df = pd.DataFrame.from_dict(playlist_track_info)
+    df = pd.DataFrame.from_dict(playlist_track_info).set_index('id')
 
     return df
 
